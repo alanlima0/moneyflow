@@ -15,7 +15,6 @@
 2. Acesse: http://localhost:8000
 
 # Comandos úteis:
-🔸 docker-compose exec backend alembic upgrade head  # Rodar migrações
 🔸 docker-compose logs -f  # Ver logs
 🔸 docker-compose down  # Parar sistema
 
