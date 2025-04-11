@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Finance API</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        body {
+            background-color:rgb(31, 31, 31); /* Dark blue-gray */
+            color: #f8f9fa; /* Light text */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .auth-container {
+            width: 100%;
+            max-width: 450px; /* Caixa um pouco maior */
+            padding: 2.5rem; /* Mais espaço interno */
+            background-color: #323643; /* Dark gray-blue */
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo-container {
+            margin-left:0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo {
+            max-width: 100px; /* Logo um pouco maior */
+            height: auto;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-control {
+            background-color: rgba(255, 165, 0, 0.2) !important;
+            border: 1px solid rgba(255, 165, 0, 0.4) !important;
+            color: #f8f9fa !important;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color:rgb(255, 140, 0) !important;
+            box-shadow: 0 0 0 0.25rem rgba(255, 140, 0, 0.25) !important;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        .input-group-text {
+            background-color: rgba(255, 165, 0, 0.3) !important;
+            border-color: rgba(255, 165, 0, 0.4) !important;
+            color: #ff8c00 !important;
+        }
+        
+        .btn-primary {
+            background-color: #ff8c00 !important;
+            border-color: #ff8c00 !important;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e67e00 !important;
+            border-color: #e67e00 !important;
+            transform: translateY(-2px);
+        }
+        
+        .alert {
+            border-radius: 8px;
+        }
+        
+        h2 {
+            color: #ff8c00;
+            margin-bottom: 1.5rem !important;
+            font-weight: 600;
+            font-family: "Poppins", sans-serif;
+        }
+        
+        a {
+            color: #ff8c00;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        a:hover {
+            color: #ffa500;
+            text-decoration: underline;
+        }
+        
+        label {
+            color: #e2e8f0;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container auth-container">
+        <div class="logo-container">
+            <img src="static/img/logo.png" alt="Logo" class="logo">
+        </div>
+        <!-- Mensagens de erro -->
+        <div id="login-error" class="alert alert-danger d-none"></div>
+        <div id="register-error" class="alert alert-danger d-none"></div>
+
+        <!-- Formulário de Login -->
+        <div id="login-form">
+            <h2 class="text-center mb-4">Login</h2>
+            <form id="login">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Usuário</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Entrar</button>
+            </form>
+            <p class="mt-3 text-center">
+                Não tem uma conta? <a href="#" onclick="showRegister()">Registre-se</a>
+            </p>
+        </div>
+
+        <!-- Formulário de Cadastro -->
+        <div id="register-form" class="d-none">
+            <h2 class="text-center mb-4">Cadastro</h2>
+            <form id="register">
+                <div class="mb-3">
+                    <label for="reg-username" class="form-label">Usuário</label>
+                    <input type="text" class="form-control" id="reg-username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="reg-email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="reg-email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="reg-password" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="reg-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+            </form>
+            <p class="mt-3 text-center">
+                Já tem uma conta? <a href="#" onclick="showLogin()">Faça login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Alternar entre login e cadastro
+        function showRegister() {
+            document.getElementById("login-form").classList.add("d-none");
+            document.getElementById("register-form").classList.remove("d-none");
+            document.getElementById("login-error").classList.add("d-none");
+        }
+        
+        function showLogin() {
+            document.getElementById("register-form").classList.add("d-none");
+            document.getElementById("login-form").classList.remove("d-none");
+            document.getElementById("register-error").classList.add("d-none");
+        }
+
+        // Enviar formulário de login via AJAX
+        document.getElementById("login").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const errorElement = document.getElementById("login-error");
+            errorElement.classList.add("d-none");
+            
+            const formData = {
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value
+            };
+            
+            try {
+                const response = await fetch("/token", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem("access_token", responseData.access_token);
+                    window.location.href = "/dashboard";
+                } else {
+                    errorElement.textContent = responseData.detail || "Usuário ou senha inválidos.";
+                    errorElement.classList.remove("d-none");
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                errorElement.textContent = "Erro na conexão com o servidor.";
+                errorElement.classList.remove("d-none");
+            }
+        });
+
+        // Enviar formulário de cadastro via AJAX
+        document.getElementById("register").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const errorElement = document.getElementById("register-error");
+            errorElement.classList.add("d-none");
+            
+            const formData = {
+                username: document.getElementById("reg-username").value,
+                email: document.getElementById("reg-email").value,
+                password: document.getElementById("reg-password").value
+            };
+            
+            try {
+                const response = await fetch("/users/", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    const loginError = document.getElementById("login-error");
+                    showLogin();
+                    loginError.textContent = "Cadastro realizado! Faça login.";
+                    loginError.classList.remove("d-none");
+                    loginError.classList.remove("alert-danger");
+                    loginError.classList.add("alert-success");
+                } else {
+                    errorElement.textContent = responseData.detail || "Erro no cadastro.";
+                    errorElement.classList.remove("d-none");
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                errorElement.textContent = "Erro na conexão com o servidor.";
+                errorElement.classList.remove("d-none");
+            }
+        });
+    </script>
+</body>
+</html>

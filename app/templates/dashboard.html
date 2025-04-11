@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Contas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: rgba(255, 98, 0, 0.94);
+      --secondary-color: rgb(255, 77, 0);
+      --text-color: #e0e0e0; /* Alterado para melhor contraste */
+      --card-bg: #2a2a2a; /* Cor de fundo dos cards */
+    }
+    
+    body {
+      background-color: #1b1b1b;
+      color: var(--text-color);
+    }
+    
+    /* CARDS PRINCIPAIS (SALDO, RECEITAS, DESPESAS) */
+    .summary-card {
+      background-color: var(--card-bg);
+      border: none;
+      transition: all 0.3s ease;
+    }
+    
+    .summary-card .card-title {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .summary-card .card-text {
+      color: #ffffff;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    
+    .summary-card .text-muted {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+    
+    /* Cores específicas para cada card */
+    .summary-card.border-success {
+      border-left: 4px solid #28a745 !important;
+    }
+    
+    .summary-card.border-danger {
+      border-left: 4px solid #dc3545 !important;
+    }
+    
+    .summary-card.border-primary {
+      border-left: 4px solid #007bff !important;
+    }
+    
+    /* CARD DE HISTÓRICO */
+    .history-card {
+      background-color: var(--card-bg);
+    }
+    
+    .history-card .card-header {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .transaction-item {
+      background-color: #323232;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.4rem;
+      border-radius: 0.25rem;
+    }
+    
+    /* RESTANTE DO SEU CSS (mantido igual) */
+    .card {
+      border-radius: 0.35rem;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.2);
+      margin-bottom: 1.5rem;
+      border: none;
+    }
+    
+    .card-header {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+      border-radius: 0.35rem 0.35rem 0 0 !important;
+    }
+  
+    .transaction-item {
+      background-color: #323232;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.4rem;
+      border-radius: 0.25rem;
+      color: #f0f0f0; /* Texto mais claro */
+    }
+    
+    .transaction-desc {
+      font-weight: 500;
+      color: #ffffff !important; /* Branco puro */
+      font-size: 0.95rem;
+    }
+    
+    .transaction-date {
+      color: #c0c0c0 !important; /* Cinza claro */
+      font-size: 0.8rem;
+    }
+    
+    .transaction-category {
+      color: #ffbb33 !important; /* Laranja claro */
+      font-size: 0.75rem;
+    }
+    
+    .no-transactions {
+      color: #d0d0d0 !important; /* Cinza claro */
+    }
+    
+    .income {
+      border-left: 4px solid #1cc88a;
+    }
+    
+    .expense {
+      border-left: 4px solid #e74a3b;
+    }
+    
+    .pagination-controls {
+      display: flex;
+      justify-content: center;
+      padding: 0.8rem 0;
+    }
+    
+    .page-info {
+      margin: 0 1rem;
+      display: flex;
+      align-items: center;
+    }
+    .card {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .welcome-header {
+      margin-bottom: 30px;
+    }
+    .badge-receita {
+      background-color: #28a745;
+    }
+    .badge-despesa {
+      background-color: #dc3545;
+    }
+    .action-buttons {
+      white-space: nowrap;
+    }
+    #transactions-table tbody tr {
+      cursor: pointer;
+    }
+  
+    .logo{
+      max-width: 100px;
+      align-items: center;
+    }
+    .card {
+      transition: all 0.3s ease;
+      height: 100%;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .card.border-success {
+      border-left: 4px solid #28a745 !important;
+    }
+    
+    .card.border-danger {
+      border-left: 4px solid #dc3545 !important;
+    }
+    
+    .card.border-primary {
+      border-left: 4px solid #007bff !important;
+    }
+    
+    /* Dropdown de contas */
+    .dropdown-menu {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .account-item {
+      padding: 0.5rem 1rem;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .account-item:hover {
+      border-left-color: var(--primary-color);
+      background-color: #f8f9fa;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .card {
+        margin-bottom: 1rem;
+      }
+    }
+    
+  </style>
+</head>
+<body>
+  <header class="mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #1b1b1b;">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <img src="../static/img/logo.png" alt="Logo" class="logo">
+        </a>
+        
+        <!-- Menu Dropdown de Contas -->
+        <div class="dropdown ms-auto">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="accountsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-wallet2"></i> Contas
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="accountsDropdown" id="accountsMenu">
+            <li><h6 class="dropdown-header">Minhas Contas</h6></li>
+            <div id="accountsList"></div>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                <i class="bi bi-plus-circle"></i> Criar nova conta
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="container py-4">
+<!-- Cards de Resumo -->
+<div class="row mb-4">
+  <!-- Card de Saldo -->
+  <div class="col-md-4 mb-3">
+    <div class="card summary-card border-success h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-cash-stack"></i> Saldo</h5>
+        <h2 class="card-text" id="balanceAmount">R$ 0,00</h2>
+        <p class="text-muted small">Saldo atual</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Card de Despesas -->
+  <div class="col-md-4 mb-3">
+    <div class="card summary-card border-danger h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-arrow-down-circle"></i> Despesas</h5>
+        <h2 class="card-text" id="expensesAmount">R$ 0,00</h2>
+        <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+          <i class="bi bi-plus"></i> Nova Despesa
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Card de Receitas -->
+  <div class="col-md-4 mb-3">
+    <div class="card summary-card border-primary h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-arrow-up-circle"></i> Receitas</h5>
+        <h2 class="card-text" id="incomeAmount">R$ 0,00</h2>
+        <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
+          <i class="bi bi-plus"></i> Nova Receita
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Seção de Gráficos e Histórico -->
+    <div class="row">
+      <!-- Gráfico (ocupa 2/3 do espaço) -->
+      <div class="col-lg-8 mb-4">
+        <div class="card h-100" style="background-color: #323643">
+          <div class="card-header" style="background-color: rgba(255, 98, 0, 0.94)">
+            <i class="bi bi-bar-chart-fill me-2"></i>
+            Despesas por Categoria
+          </div>
+          <div class="card-body">
+            <canvas id="expensesChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Histórico (ocupa 1/3 do espaço) -->
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 history-card">
+          <div class="card-header" style="background-color: rgba(255, 98, 0, 0.94)">
+            <i class="bi bi-clock-history me-2"></i>
+            Histórico Recente
+          </div>
+          <div class="card-body p-0">
+            <div class="transaction-card" id="transactionsContainer" style="max-height: 300px; overflow-y: auto;">
+              <div class="no-transactions p-3 text-center">
+                Selecione uma conta para ver o histórico
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+
+  <!-- Modal Adicionar Conta -->
+  <div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="addAccountModalLabel"><i class="bi bi-wallet2"></i> Adicionar Nova Conta</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="accountForm">
+            <div class="mb-3">
+              <label for="name" class="form-label">Nome da Conta</label>
+              <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="is_credit" class="form-label">Tipo de Conta</label>
+              <select class="form-select" id="is_credit">
+                <option value="false">Conta Normal</option>
+                <option value="true">Cartão de Crédito</option>
+              </select>
+            </div>
+            <div class="mb-3" id="creditFields" style="display: none;">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="credit_limit" class="form-label">Limite de Crédito</label>
+                  <input type="number" class="form-control" id="credit_limit" placeholder="R$ 0,00">
+                </div>
+                <div class="col-md-6">
+                  <label for="due_day" class="form-label">Dia de Vencimento</label>
+                  <input type="number" class="form-control" id="due_day" min="1" max="31" placeholder="1-31">
+                </div>
+              </div>
+            </div>
+            <div class="mb-3" id="normalFields">
+              <label for="balance" class="form-label">Saldo Inicial</label>
+              <input type="number" class="form-control" id="balance" placeholder="R$ 0,00">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="createAccount()">Salvar Conta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Modal para Despesa -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="bi bi-arrow-down-circle"></i> Nova Despesa</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="expenseForm">
+          <input type="hidden" id="expenseType" value="EXPENSE">
+          <div class="mb-3">
+            <label for="expenseValue" class="form-label">Valor</label>
+            <input type="number" step="0.01" class="form-control" id="expenseValue" placeholder="R$ 0,00" required>
+          </div>
+          <div class="mb-3">
+            <label for="expenseDate" class="form-label">Data</label>
+            <input type="date" class="form-control" id="expenseDate" required>
+          </div>
+          <div class="mb-3">
+            <label for="expenseDescription" class="form-label">Descrição</label>
+            <input type="text" class="form-control" id="expenseDescription" required>
+          </div>
+          <div class="mb-3">
+            <label for="expenseCategory" class="form-label">Categoria</label>
+            <select class="form-select" id="expenseCategory" required>
+              <option value="" disabled selected>Selecione uma categoria</option>
+              <option value="1">Alimentação</option>
+              <option value="2">Transporte</option>
+              <option value="3">Moradia</option>
+              <option value="4">Lazer</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" onclick="createTransaction('EXPENSE')">Salvar Despesa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Receita -->
+<div class="modal fade" id="addIncomeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-arrow-up-circle"></i> Nova Receita</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="incomeForm">
+          <input type="hidden" id="incomeType" value="INCOME">
+          <div class="mb-3">
+            <label for="incomeValue" class="form-label">Valor</label>
+            <input type="number" step="0.01" class="form-control" id="incomeValue" placeholder="R$ 0,00" required>
+          </div>
+          <div class="mb-3">
+            <label for="incomeDate" class="form-label">Data</label>
+            <input type="date" class="form-control" id="incomeDate" required>
+          </div>
+          <div class="mb-3">
+            <label for="incomeDescription" class="form-label">Descrição</label>
+            <input type="text" class="form-control" id="incomeDescription" required>
+          </div>
+          <div class="mb-3">
+            <label for="incomeCategory" class="form-label">Categoria</label>
+            <select class="form-select" id="incomeCategory" required>
+              <option value="" disabled selected>Selecione uma categoria</option>
+              <option value="5">Salário</option>
+              <option value="6">Investimentos</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" onclick="createTransaction('INCOME')">Salvar Receita</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  <script>
+    const authToken = localStorage.getItem('access_token');
+    let currentAccountId = null;
+    let accountsData = [];
+    let currentPage = 1;
+    let transactionsPerPage = 5;
+    let allTransactions = [];
+    let expensesChart = null;
+    
+    // Função para fazer requisições autenticadas
+    async function makeAuthenticatedRequest(url, method = 'GET', body = null) {
+      const headers = {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      };
+      const config = { method, headers };
+      if (body) config.body = JSON.stringify(body);
+      
+      try {
+        const response = await fetch(url, config);
+        if (response.status === 401) {
+          localStorage.removeItem('access_token');
+          window.location.href = '/';
+          return null;
+        }
+        return response;
+      } catch (error) {
+        console.error('Erro na requisição:', error);
+        throw error;
+      }
+    }
+    
+    // Carregar todas as contas do usuário
+    async function loadAccounts() {
+      try {
+        const response = await makeAuthenticatedRequest('/accounts');
+        if (!response.ok) throw new Error('Erro ao carregar contas');
+        
+        accountsData = await response.json();
+        const accountsList = document.getElementById('accountsList');
+        accountsList.innerHTML = '';
+        
+        // Adicionar cada conta ao dropdown
+        accountsData.forEach(account => {
+          const accountItem = document.createElement('li');
+          accountItem.innerHTML = `
+            <a class="dropdown-item account-item" href="#" data-id="${account.id}">
+              <i class="bi bi-wallet2"></i> ${account.name}
+              <span class="float-end">${account.is_credit ? '(Crédito)' : ''}</span>
+            </a>
+          `;
+          accountsList.appendChild(accountItem);
+        });
+        
+        // Adicionar eventos aos itens da conta
+        document.querySelectorAll('.account-item').forEach(item => {
+          item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const accountId = parseInt(this.getAttribute('data-id'));
+            selectAccount(accountId);
+          });
+        });
+        
+        // Selecionar a primeira conta por padrão
+        if (accountsData.length > 0) {
+          await selectAccount(accountsData[0].id);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar contas:', error);
+        alert('Erro ao carregar contas: ' + error.message);
+      }
+    }
+
+    async function loadAccountData(accountId) {
+      try {
+        // Limpa os dados antigos primeiro
+        updateSummaryCards({
+          balance: 0,
+          total_expenses: 0,
+          total_income: 0
+        });
+        
+        if (expensesChart) {
+          expensesChart.destroy();
+          expensesChart = null;
+        }
+    
+        const [balanceResponse, analyticsResponse, transactionsResponse] = await Promise.all([
+        makeAuthenticatedRequest(`/accounts/${accountId}/balance`),
+        makeAuthenticatedRequest(`/api/analytics/expenses-by-category/${accountId}`),
+        makeAuthenticatedRequest(`/transactions/${accountId}`)
+      ]);
+    
+        if (!balanceResponse.ok || !analyticsResponse.ok || !transactionsResponse.ok) {
+          throw new Error('Erro ao carregar dados da conta');
+        }
+    
+        const [balanceData, analyticsData, transactions] = await Promise.all([
+          balanceResponse.json(),
+          analyticsResponse.json(),
+          transactionsResponse.json()
+        ]);
+    
+        // Atualiza a interface
+        updateSummaryCards({
+          balance: balanceData.balance,
+          total_expenses: analyticsData.total_expenses,
+          total_income: analyticsData.total_income || 0
+        });
+    
+        // Processa as transações
+        allTransactions = transactions.map(tx => ({
+          ...tx,
+          date: new Date(tx.date).toLocaleDateString('pt-BR'),
+          amount: parseFloat(tx.amount),
+          category: tx.category_id ? `Categoria ${tx.category_id}` : 'Sem categoria'
+        })).sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+        renderTransactions();
+        renderExpensesChart(analyticsData.total_expenses, analyticsData.categories);
+    
+      } catch (error) {
+        console.error('Erro ao carregar dados da conta:', error);
+        const container = document.getElementById('transactionsContainer');
+        container.innerHTML = '<div class="alert alert-danger">Erro ao carregar dados</div>';
+      }
+    }
+    async function selectAccount(accountId) {
+      // Verifica se a conta existe nos dados carregados
+      const account = accountsData.find(a => a.id === accountId);
+      if (!account) return;
+    
+      // Atualiza o ID da conta atual
+      currentAccountId = accountId;
+      
+      // Atualiza o dropdown
+      document.getElementById('accountsDropdown').innerHTML = `
+        <i class="bi bi-wallet2"></i> ${account.name}
+      `;
+      
+      // Limpa os dados antigos
+      document.getElementById('transactionsContainer').innerHTML = 
+        '<div class="text-center py-3">Carregando...</div>';
+      
+      // Carrega os novos dados
+      await loadAccountData(accountId);
+    }
+    
+    function updateSummaryCards(data) {
+      // Função para formatar valores monetários
+      const formatCurrency = (value) => {
+        return 'R$ ' + parseFloat(value || 0).toFixed(2)
+                      .replace('.', ',')
+                      .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+      };
+    
+      // Atualiza todos os cards
+      document.getElementById('balanceAmount').textContent = formatCurrency(data.balance);
+      document.getElementById('expensesAmount').textContent = formatCurrency(data.total_expenses);
+      document.getElementById('incomeAmount').textContent = formatCurrency(data.total_income);
+      
+      // Adiciona cor condicional ao saldo
+      const balanceElement = document.getElementById('balanceAmount');
+      balanceElement.classList.remove('text-success', 'text-danger', 'text-white');
+      
+      if (data.balance > 0) {
+        balanceElement.classList.add('text-success');
+      } else if (data.balance < 0) {
+        balanceElement.classList.add('text-danger');
+      } else {
+        balanceElement.classList.add('text-white');
+      }
+    }
+// Adicione esta função para carregar o saldo e receitas
+async function loadAccountSummary(accountId) {
+  try {
+    const response = await makeAuthenticatedRequest(`/accounts/${accountId}/summary`);
+    if (!response.ok) throw new Error('Erro ao carregar resumo');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao carregar resumo:', error);
+    return { balance: 0, total_income: 0 };
+  }
+}
+    // Carregar transações de uma conta
+    async function loadAccountTransactions(accountId) {
+      try {
+        const response = await makeAuthenticatedRequest(`/transactions/${accountId}`);
+        if (!response.ok) throw new Error('Erro ao carregar transações');
+        
+        const transactions = await response.json();
+        
+        // Processar e ordenar transações (mais recente primeiro)
+        allTransactions = transactions.map(tx => ({
+          ...tx,
+          date: new Date(tx.date).toLocaleDateString('pt-BR'),
+          amount: parseFloat(tx.amount),
+          category: tx.category_id ? `Categoria ${tx.category_id}` : 'Sem categoria'
+        })).sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        renderTransactions();
+      } catch (error) {
+        console.error('Erro ao carregar transações:', error);
+        const container = document.getElementById('transactionsContainer');
+        container.innerHTML = '<div class="alert alert-danger">Erro ao carregar transações</div>';
+      }
+    }
+    
+    function renderTransactions() {
+      const container = document.getElementById('transactionsContainer');
+      container.innerHTML = '';
+    
+      if (allTransactions.length === 0) {
+        container.innerHTML = '<div class="text-center py-3 small text-muted">Nenhuma transação recente</div>';
+        return;
+      }
+    
+      const startIndex = (currentPage - 1) * transactionsPerPage;
+      const endIndex = startIndex + transactionsPerPage;
+      const pageTransactions = allTransactions.slice(startIndex, endIndex);
+    
+      pageTransactions.forEach(tx => {
+        const txElement = document.createElement('div');
+        txElement.className = `transaction-item ${tx.transaction_type === 'INCOME' ? 'income' : 'expense'}`;
+        
+        txElement.innerHTML = `
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <strong>${tx.description || 'Transação'}</strong>
+              <div class="small text-muted">${tx.date}</div>
+              ${tx.category ? `<div class="small text-muted">${tx.category}</div>` : ''}
+            </div>
+            <div class="text-end">
+              <div class="transaction-amount ${tx.transaction_type === 'INCOME' ? 'text-success' : 'text-danger'}">
+                ${tx.transaction_type === 'INCOME' ? '+' : '-'} R$ ${tx.amount.toFixed(2)}
+              </div>
+              <span class="badge ${tx.transaction_type === 'INCOME' ? 'bg-success' : 'bg-danger'} small">
+                ${tx.transaction_type === 'INCOME' ? 'Receita' : 'Despesa'}
+              </span>
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(txElement);
+      });
+    }
+    
+    // Carregar dados para o gráfico
+    async function loadChartData(accountId) {
+      try {
+        const response = await makeAuthenticatedRequest(`/api/analytics/expenses-by-category?account_id=${accountId}`);
+        if (!response.ok) throw new Error('Erro ao carregar dados do gráfico');
+        
+        const data = await response.json();
+        renderExpensesChart(data.total_expenses, data.categories);
+      } catch (error) {
+        console.error('Erro ao carregar gráfico:', error);
+      }
+    }
+    
+    // Renderizar gráfico de despesas
+    function renderExpensesChart(totalExpenses, categories) {
+      const chartContainer = document.getElementById('expensesChart').parentElement;
+      const ctx = document.getElementById('expensesChart').getContext('2d');
+      
+      // 1. Definir tamanho FIXO para o canvas
+      const canvas = document.getElementById('expensesChart');
+      canvas.style.width = '100%';
+      canvas.style.height = '400px'; // Altura fixa
+      canvas.width = canvas.offsetWidth;
+      canvas.height = 400; // Altura fixa em pixels
+    
+      // 2. Cores fixas por categoria
+      const CATEGORY_COLORS = {
+        'Alimentação': '#FF6384',
+        'Transporte': '#36A2EB',
+        'Moradia': '#FFCE56',
+        'Lazer': '#4BC0C0',
+        'Saúde': '#9966FF',
+        'Educação': '#FF9F40',
+        'Vestuário': '#C9CBCF',
+        'Outros': '#8AC24A'
+      };
+
+        
+      if (expensesChart) {
+        expensesChart.destroy();
+      }
+          
+    
+      // 3. Preparar dados com limites rígidos (0-5000)
+      const labels = Object.keys(CATEGORY_COLORS);
+      const data = labels.map(label => {
+        const category = categories.find(c => c.category_name === label);
+        const value = category ? category.total_amount : 0;
+        return Math.min(Math.max(value, 0), 5000); // Força limite de 5k
+      });
+    
+
+      // 5. Criar gráfico com configurações FIXAS
+      expensesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: labels.map(label => CATEGORY_COLORS[label]),
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: false, // IMPORTANTE: Desativa o redimensionamento
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              min: 0,
+              max: 5000,
+              ticks: {
+                stepSize: 1000,
+                callback: value => 'R$ ' + value.toLocaleString('pt-BR')
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.label}: R$ ${ctx.raw.toFixed(2)}`
+              }
+            }
+          },
+          animation: {
+            duration: 0
+          }
+        }
+      });
+    }
+    
+    // Criar nova conta
+    async function createAccount() {
+      try {
+        const name = document.getElementById('name').value;
+        const is_credit = document.getElementById('is_credit').value === 'true';
+        const body = { name, is_credit };
+        
+        if (is_credit) {
+          body.credit_limit = parseFloat(document.getElementById('credit_limit').value) || 0;
+          body.due_day = parseInt(document.getElementById('due_day').value) || 1;
+        } else {
+          body.balance = parseFloat(document.getElementById('balance').value) || 0;
+        }
+        
+        const response = await makeAuthenticatedRequest('/accounts', 'POST', body);
+        
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(error);
+        }
+        
+        // Fechar modal e recarregar contas
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addAccountModal'));
+        modal.hide();
+        document.getElementById('accountForm').reset();
+        
+        await loadAccounts();
+        alert('Conta criada com sucesso!');
+      } catch (error) {
+        console.error('Erro ao criar conta:', error);
+        alert(`Erro ao criar conta: ${error.message}`);
+      }
+    }
+    
+    // Criar nova transação
+    async function createTransaction(type) {
+      if (!currentAccountId) {
+        alert('Por favor, selecione uma conta primeiro');
+        return;
+      }
+    
+      try {
+        const prefix = type.toLowerCase();
+        const form = document.getElementById(`${prefix}Form`);
+        
+        // Validação dos campos
+        const amount = parseFloat(document.getElementById(`${prefix}Value`).value);
+        const date = document.getElementById(`${prefix}Date`).value;
+        const description = document.getElementById(`${prefix}Description`).value;
+        const category_id = parseInt(document.getElementById(`${prefix}Category`).value);
+    
+        if (!amount || amount <= 0) {
+          throw new Error('Informe um valor válido');
+        }
+        if (!date) {
+          throw new Error('Informe uma data válida');
+        }
+        if (!description) {
+          throw new Error('Informe uma descrição');
+        }
+        if (!category_id) {
+          throw new Error('Selecione uma categoria');
+        }
+    
+        const transactionData = {
+          amount: amount,
+          date: date,
+          description: description,
+          category_id: category_id,
+          account_id: currentAccountId,
+          transaction_type: type
+        };
+    
+        const response = await makeAuthenticatedRequest('/transactions', 'POST', transactionData);
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Erro ao criar transação');
+        }
+    
+        // Fecha o modal e limpa o formulário
+        const modal = bootstrap.Modal.getInstance(document.getElementById(`add${type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()}Modal`));
+        modal.hide();
+        form.reset();
+    
+        // Recarrega os dados
+        await loadAccountData(currentAccountId);
+        
+        alert('Transação registrada com sucesso!');
+      } catch (error) {
+        console.error(`Erro ao criar ${type === 'EXPENSE' ? 'despesa' : 'receita'}:`, error);
+        alert(`Erro: ${error.message}`);
+      }
+    }
+    
+    // Definir tipo de transação (receita/despesa)
+    function setTransactionType(type) {
+      document.getElementById('transaction_type').value = type;
+    }
+    
+    // Inicialização da aplicação
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!authToken) {
+        window.location.href = '/';
+        return;
+      }
+    
+
+      // Mostrar/ocultar campos baseados no tipo de conta
+      document.getElementById('is_credit').addEventListener('change', function() {
+        const isCredit = this.value === 'true';
+        document.getElementById('creditFields').style.display = isCredit ? 'block' : 'none';
+        document.getElementById('normalFields').style.display = isCredit ? 'none' : 'block';
+      });
+    
+      // Carregar contas
+      await loadAccounts();
+    
+      // Configurar eventos de paginação
+      document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTransactions();
+        }
+      });
+    
+      document.getElementById('nextPage').addEventListener('click', () => {
+        if (currentPage < Math.ceil(allTransactions.length / transactionsPerPage)) {
+          currentPage++;
+          renderTransactions();
+        }
+      });
+    
+      // Configurar logout
+      document.getElementById('logout-btn')?.addEventListener('click', () => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_data');
+        window.location.href = '/';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+body {
+    background-color: #1E1E1E;
+    color: #f8f9fa; /* Cor de texto clara para contraste */
+  }
+
+  .card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  .welcome-header {
+    margin-bottom: 30px;
+  }
+  .badge-receita {
+    background-color: #28a745;
+  }
+  .badge-despesa {
+    background-color: #dc3545;
+  }
+  .action-buttons {
+    white-space: nowrap;
+  }
+  #transactions-table tbody tr {
+    cursor: pointer;
+  }
+
+  .logo{
+    max-width: 100px;
+    align-items: center;
+  }
+
+  .card {
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  canvas {
+    width: 100% !important;
+    height: 300px !important;
+  }
